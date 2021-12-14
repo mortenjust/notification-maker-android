@@ -187,6 +187,24 @@
         android:key="uses_chronometer"
         />
 
+    <SwitchPreference
+        android:defaultValue="false"
+        android:title="Messaging"
+        android:key="messaging"
+        />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:title="Determinate Progress"
+        android:key="progress_determinate"
+        />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:title="Indeterminate Progress"
+        android:key="progress_indeterminate"
+        />
+
 
 
 

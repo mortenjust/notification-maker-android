@@ -1,7 +1,6 @@
 package com.mortenjust.notificationmaker;
 
 
-import android.support.v7.app.NotificationCompat;
 
 /**
  * Created by mortenjust on 3/9/16.

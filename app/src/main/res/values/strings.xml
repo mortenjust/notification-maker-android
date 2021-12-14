@@ -16,6 +16,24 @@
     <string name="pref_default_display_name">John Smith</string>
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
 
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <string name="pref_header_notifications">Notifications</string>
+
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+
+    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="save">Save</string>
+
+    <string name="create_new_notification">Create new notification</string>
+
     <string-array name="pref_large_icon_content_titles">
         <item>None</item>
         <item>Girl with watches as eyes</item>
@@ -37,6 +55,7 @@
         <item>launcher_icon</item>
     </string-array>
 
+
     <string-array name="pref_priority_titles">
         <item>PRIORITY_MIN</item>
         <item>PRIORITY_LOW</item>
@@ -44,13 +63,12 @@
         <item>PRIORITY_HIGH</item>
         <item>PRIORITY_MAX</item>
     </string-array>
-
-<string-array name="pref_priority_values">
-        <item>-2</item>
-        <item>-1</item>
-        <item>0</item>
+    <string-array name="pref_priority_values">
         <item>1</item>
         <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
     </string-array>
 
 
@@ -63,6 +81,7 @@
         <item>Done</item>
         <item>See stats</item>
     </string-array>
+
     <string-array name="pref_action_values">
         <item>reply</item>
         <item>archive</item>
@@ -73,6 +92,7 @@
         <item>data</item>
     </string-array>
 
+    <!-- Example settings for Data & Sync -->
     <string-array name="pref_wearable_action_titles">
         <item>Reply</item>
         <item>Archive</item>
@@ -81,6 +101,7 @@
         <item>Open</item>
         <item>Done</item>
     </string-array>
+
     <string-array name="pref_wearable_action_values">
         <item>reply</item>
         <item>archive</item>
@@ -89,7 +110,6 @@
         <item>open</item>
         <item>done</item>
     </string-array>
-
     <string-array name="pref_notification_icon">
         <item>Default</item>
         <item>Twitter</item>
@@ -101,7 +121,6 @@
         <item>Chat</item>
         <item>NYTimes</item>
     </string-array>
-
     <string-array name="pref_notification_icon_value">
         <item>default</item>
         <item>twitter</item>
@@ -119,12 +138,13 @@
         <item>VISIBILITY_PUBLIC</item>
         <item>VISIBILITY_SECRET</item>
     </string-array>
+
+    <!-- Example settings for Notifications -->
     <string-array name="pref_visibility_values">
         <item>0</item>
         <item>1</item>
         <item>-1</item>
     </string-array>
-
 
     <string-array name="pref_style_titles">
         <item>None</item>
@@ -133,6 +153,7 @@
         <item>Cover card (InboxStyle)</item>
         <item>Media card (MediaStyle)</item>
     </string-array>
+
     <string-array name="pref_style_values">
         <item>none</item>
         <item>use_big_picture_style</item>
@@ -140,8 +161,6 @@
         <item>use_inbox_style</item>
         <item>use_media_style</item>
     </string-array>
-
-
     <string-array name="pref_categories_titles">
         <item>ALARM</item>
         <item>CALL</item>
@@ -177,12 +196,7 @@
         <item>system</item>
         <item>transport</item>
     </string-array>
-
-    <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
-
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
+  <string-array name="pref_sync_frequency_titles">
         <item>15 minutes</item>
         <item>30 minutes</item>
         <item>1 hour</item>
@@ -190,7 +204,7 @@
         <item>6 hours</item>
         <item>Never</item>
     </string-array>
-    <string-array name="pref_sync_frequency_values">
+  <string-array name="pref_sync_frequency_values">
         <item>15</item>
         <item>30</item>
         <item>60</item>
@@ -198,18 +212,19 @@
         <item>360</item>
         <item>-1</item>
     </string-array>
+  <string name="saved">"Saved notification "</string>
+  <string name="wearos_warning_intro_snackbar">Wear OS users: additional configuration is needed</string>
+    <string name="show_me">Show me</string>
+  <string name="wearos_configuration">Wear OS Configuration</string>
+    <string name="wearos_subtitle">How to see notifications on your watch</string>
+    <string name="wearos_help"><![CDATA[
+The Wear OS companion will filter out by default any notification that appears while you are using the phone.\n\n
+To allow Notification Maker notifications to appear on the watch:\n\n
+1. Open the Wear OS Companion.\n
+2. Open “Watch Preferences“ -> “Sound & Vibration“\n
+3. Uncheck “Hide Notifications“\n
 
-    <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
-
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
+]]></string>
 
     <string-array name="reply_choices">
         <item>Yes</item>

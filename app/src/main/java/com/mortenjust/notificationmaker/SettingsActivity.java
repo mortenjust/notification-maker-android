@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -15,16 +16,19 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
-
-import java.awt.font.TextAttribute;
+import androidx.appcompat.app.ActionBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.mortenjust.notificationmaker.models.NotificationDataPreferences;
+import com.mortenjust.notificationmaker.models.NotificationRepo;
 import java.util.List;
 
 /**
@@ -39,12 +43,17 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+    private static final String FRAGMENT_ARGUMENT_LOAD_NOTIFICATION = "FRAGMENT_ARGUMENT_LOAD_NOTIFICATION";
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
+    private static final String TAG = "mj.SettingsActivity";
+    public static final String PREFS_HINT_SEEN = "PREFS_HINT_SEEN";
 
-    String TAG = "mj.SettingsActivity";
+    private NotificationRepo repo;
 
 //    @Override
 //    public void onHeaderClick(Header header, int position) {
@@ -105,6 +114,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     };
 
+    private final OnSharedPreferenceChangeListener
+        onNotificationSavedListener = (a, b) -> invalidateHeaders();;
+
     /**
      * Helper method to determine if the device has an extra-large screen. For
      * example, 10" tablets are extra-large.
@@ -139,12 +151,49 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        repo = new NotificationRepo(this);
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+        getFragmentManager().addOnBackStackChangedListener(this::invalidateHeaders);
+        repo.addNotificationSavedListener(onNotificationSavedListener);
+
+        showHint();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        repo.removeNotificationSavedListener(onNotificationSavedListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        invalidateHeaders();
+    }
+
+    private void showHint() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_HINT_SEEN, MODE_PRIVATE);
+        if (!prefs.getBoolean(PREFS_HINT_SEEN, false)) {
+            getListView().postDelayed(() -> {
+                Snackbar snackbar = Snackbar
+                    .make(getListView(), R.string.wearos_warning_intro_snackbar,
+                        Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction(
+                    R.string.show_me,
+                    v -> {
+                        prefs.edit().putBoolean(PREFS_HINT_SEEN, true).apply();
+                        startActivity(new Intent(this, HelpActivity.class));
+                    });
+
+                snackbar.show();
+            }, 1000);
+        }
     }
 
     /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
+     * Set up the {@link ActionBar}, if the API is available.
      */
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
@@ -170,6 +219,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.pref_headers, target);
+
+        String[] savedNotifications = repo.loadNotificationNames();
+        for (String notifName : savedNotifications) {
+            Header header = new Header();
+            header.title = notifName;
+            header.fragment = target.get(0).fragment;
+            Bundle fragmentArguments = new Bundle();
+            fragmentArguments.putString(FRAGMENT_ARGUMENT_LOAD_NOTIFICATION, notifName);
+            header.fragmentArguments = fragmentArguments;
+            target.add(header);
+        }
     }
 
     /**
@@ -222,27 +282,26 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class NotificationPreferenceFragment extends PreferenceFragment {
+
+        private NotificationRepo repo;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            repo = new NotificationRepo(getContext());
 
             Log.d(getTag(), "mj.we are in the content fragment ");
+
+            Bundle arguments = getArguments();
+            if (arguments != null) {
+                String savedPreferenceName = arguments.getString(FRAGMENT_ARGUMENT_LOAD_NOTIFICATION);
+                repo.loadNotification(savedPreferenceName);
+            }
 
             addPreferencesFromResource(R.xml.pref_content);
             setHasOptionsMenu(true);
 
-            bindPreferenceSummaryToValue(findPreference("content_title"));
-            bindPreferenceSummaryToValue(findPreference("content_text"));
-            bindPreferenceSummaryToValue(findPreference("category"));
-            bindPreferenceSummaryToValue(findPreference("group"));
-            bindPreferenceSummaryToValue(findPreference("content_info"));
-            bindPreferenceSummaryToValue(findPreference("use_style"));
-            bindPreferenceSummaryToValue(findPreference("large_icon"));
-            bindPreferenceSummaryToValue(findPreference("priority"));
-//            bindHashSetPreferenceSummaryToValue(findPreference("actions")); // meh, crashes
-            bindPreferenceSummaryToValue(findPreference("visibility"));
-            bindPreferenceSummaryToValue(findPreference("notification_id_name"));
-            bindPreferenceSummaryToValue(findPreference("person"));
+            refreshSummaries();
 
 
             Preference buttonPref = findPreference("sendNotificationButton");
@@ -251,8 +310,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     Log.d("mj.", "we just got the click!");
 
-                    NotificationAssembler assembler = new NotificationAssembler(getContext());
+                    NotificationAssembler assembler = new NotificationAssembler(getContext(), new NotificationDataPreferences(getContext()));
                     assembler.postNotification();
+
                     return false;
                 }
             });
@@ -278,14 +338,44 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 //            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
         }
 
+        private void refreshSummaries() {
+            bindPreferenceSummaryToValue(findPreference("content_title"));
+            bindPreferenceSummaryToValue(findPreference("content_text"));
+            bindPreferenceSummaryToValue(findPreference("category"));
+            bindPreferenceSummaryToValue(findPreference("group"));
+            bindPreferenceSummaryToValue(findPreference("content_info"));
+            bindPreferenceSummaryToValue(findPreference("use_style"));
+            bindPreferenceSummaryToValue(findPreference("large_icon"));
+            bindPreferenceSummaryToValue(findPreference("priority"));
+//            bindHashSetPreferenceSummaryToValue(findPreference("actions")); // meh, crashes
+            bindPreferenceSummaryToValue(findPreference("visibility"));
+            bindPreferenceSummaryToValue(findPreference("notification_id_name"));
+            bindPreferenceSummaryToValue(findPreference("person"));
+        }
+
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
+            } else if (id == R.id.save) {
+                String title = PreferenceManager.getDefaultSharedPreferences(getContext())
+                    .getString("content_title", "Saved notification");
+                if (TextUtils.isEmpty(title)) {
+                    Toast.makeText(getContext(), "Can't save: Please add a title first", Toast.LENGTH_LONG).show();
+                } else {
+                    repo.saveNotification(title);
+                    Toast.makeText(getContext(), R.string.saved, Toast.LENGTH_SHORT).show();
+                }
             }
             return super.onOptionsItemSelected(item);
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            super.onCreateOptionsMenu(menu, inflater);
+            inflater.inflate(R.menu.notif_menu, menu);
         }
     }
 
@@ -319,4 +409,5 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+
 }
