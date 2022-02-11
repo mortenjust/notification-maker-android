@@ -145,13 +145,13 @@ public class NotificationAssembler {
         .getSystemService(Context.NOTIFICATION_SERVICE);
 
     int importance = getPrefInt("priority");
-    String group = getPrefString("group");
+    String group = null; //"wrong use of group": getPrefString("group");
     boolean groupSummary = getPrefBool("group_summary");
     boolean vibrate = getPrefBool("vibrate");
 
-    String id = "test_" + importance + "_" + group + "_" + vibrate;
+    String id = "test_" + importance + "_" + "_" + vibrate;
     // The user-visible name of the channel.
-    CharSequence name = "Test channel";
+    CharSequence name = "Test channel " + id;
     // The user-visible description of the channel.
     String description = "Test channel description";
     NotificationChannel mChannel = new NotificationChannel(id, name, importance);
@@ -468,7 +468,9 @@ public class NotificationAssembler {
   Notification.Action createAction(int iconId, String label) {
     Notification.Action action;
     Icon i = Icon.createWithResource(context, iconId);
-    action = new Notification.Action.Builder(i, label, null).build();
+    Intent intent = new Intent(context, SettingsActivity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, label.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    action = new Notification.Action.Builder(i, label, pendingIntent).build();
     return action;
   }
 
